@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "Your Pet's Health, Our Priority",
+    "subtitle": "Veterinary Meds at Your Doorstep!",
+    "image": "/assets/img/slider/1020-by-742.webp",
+    "url": "/shop"
+  },
+  {
+    "id": 2,
+    "title": "Ensuring Healthier Lives for Animals",
+    "subtitle": "Animal Wellness Assurance",
+    "image": "/assets/img/slider/1020-by-742-2.webp",
+    "url": "/shop"
+  }
+]

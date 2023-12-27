@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "image": "/assets/img/banner/banner-1.jpg",
+    "title": "Teracure",
+    "subtitle": "Animal <br>Health<br>Essentials",
+    "link": "/shop"
+  },
+  {
+    "id": 2,
+    "image": "/assets/img/banner/banner-2.jpg",
+    "title": "Teracure",
+    "subtitle": "Pets<br>Wellness<br>Corner",
+    "link": "/shop"
+  },
+  {
+    "id": 3,
+    "image": "/assets/img/banner/banner-3.jpg",
+    "title": "Teracure",
+    "subtitle": "Veterinary<br>Care<br>Solutions",
+    "link": "/shop"
+  }
+]
