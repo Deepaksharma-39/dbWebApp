@@ -1,19 +1,19 @@
 import express from "express";
+import cors from "cors";
 import connection from "./config.js";
-import userModel from "./models/User.js";
-import Jwt from "jsonwebtoken";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
-import excelRouter from "./routes/excel.js";
+import testRouter from "./routes/test.js";
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connection();
 
 // Parse JSON request body
 app.use(express.json());
+app.use(cors())
 
 app.get("/",(req,res)=>{
   res.send("Welcome to homepage")
@@ -26,7 +26,7 @@ app.use('/auth', authRouter);
 app.use('/user', userRouter);
 
 // read excel sheets
-app.use("/excel",excelRouter)
+app.use('/excel',testRouter)
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
