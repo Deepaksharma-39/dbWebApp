@@ -17,18 +17,16 @@ export const getResult = async (req, res) => {
 export const test = async (req, res, next) => {
   try {
     const tests = req.body;
-    await Test.insertMany(tests, (error, docs) => {
-      if (docs) {
-        res.status(200).json({ success: true, message: "test Successfull" });
-      }
-      if (error) {
-        console.log("insertMany error: ", error);
-        res.status(400).json({
-          success: true,
-          error: error,
-          message: "test failed",
-        });
-      }
+
+    await Test.insertMany(tests).then(function () {
+      res.status(200).json({ success: true, message: "test Successfull" });
+    }).catch(function (err) {
+      console.log("insertMany error: ", err);
+      res.status(400).json({
+        success: true,
+        error: err,
+        message: "test failed",
+      });
     });
   } catch (err) {
     console.error("test error : ", err);

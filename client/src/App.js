@@ -13,23 +13,22 @@ import {
 } from "reactstrap";
 import { read, utils } from "xlsx";
 
-const requiredFields = ["Phone Number", "Name"];
+const requiredFields = ["MOBILE NO", "NAME"];
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [excelRows, setExcelRows] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [rows, setRows] = useState([]);
-  const [heading, setHeading] = useState(false);
-  const [tableHeading,setTableHeading]=useState([]);
-
+  const [tableHeading, setTableHeading] = useState([]);
 
   const fetchData = async () => {
     try {
+      setRows([]);
       setLoading(true);
       const result = (await axios.get("http://localhost:5000/excel/read")).data;
-      setHeading(true);
       setLoading(false);
+      setRows(result);
     } catch (err) {
       setLoading(false);
     }
@@ -37,12 +36,11 @@ function App() {
 
   useEffect(() => {
     fetchData();
-  }, [heading]);
-
-
+  }, []);
 
   const readUploadFile = (e) => {
     e.preventDefault();
+    setLoading(true);
     if (e.target.files) {
       const file = e.target.files[0];
       setSelectedFile(file);
@@ -54,13 +52,14 @@ function App() {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const result = utils.sheet_to_json(worksheet);
-        console.log("result", result);
         if (result.length > 0) {
           const keys = Object.keys(result[0]);
           setTableHeading(keys);
         }
-        console.log("heading", tableHeading)
+        console.log("heading", tableHeading);
         setRows(result);
+        setExcelRows(result);
+        setLoading(false);
       };
       reader.readAsArrayBuffer(file);
     }
@@ -92,12 +91,86 @@ function App() {
       return <p>No data available.</p>;
     }
   };
-  
 
- 
+  const removeFile = () => {
+    setSelectedFile(null);
+    setExcelRows([]);
+    setRows([]);
+    window.location.reload();
+  };
+
+  const uploadData = async () => {
+    try {
+      setLoading(true);
+
+      const firstItemKeys = excelRows[0] && Object.keys(excelRows[0]);
+      let requiredValidation = false;
+
+      if (firstItemKeys.length) {
+        requiredFields.forEach((element) => {
+          if (!firstItemKeys.find((x) => x === element)) {
+            requiredValidation = true;
+          }
+        });
+      }
+
+      if (requiredValidation) {
+        alert("Required fields " + JSON.stringify(requiredFields), "+ missing");
+        setLoading(false);
+        return;
+      }
+
+      const response = (await axios.get("http://localhost:5000/excel/read"))
+        .data;
+      const data = response || [];
+
+      const result = excelRows.map((obj,index) => {
+        const mappedObject = {};
+        tableHeading.forEach((key) => {
+          
+            mappedObject[key] = obj[key] || "";
+          
+        });
+
+        return mappedObject;
+      });
+
+      const updatedData = result.filter((x) => x._id);
+      const newData = result.filter((x) => !x._id);
+
+      if (updatedData.length) {
+        const result = (
+          await axios.postForm(
+            "http://localhost:5000/excel/update",
+            updatedData
+          )
+        ).data;
+        if (result) {
+          alert("Successfully update " + updatedData.length + " documents");
+        }
+      }
+
+      if (newData.length) {
+        const result = (
+          await axios.post("http://localhost:5000/excel/test", newData)
+        ).data;
+
+        if (result) {
+          alert("successfully added " + newData.length + " documents");
+        }
+      }
+
+      fetchData();
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      console.log("upload Error :", err);
+    }
+  };
+
   return (
     <Fragment>
-      <h3 className="text-center mt-4 mb-4">This is</h3>
+      <h3 className="text-center mt-4 mb-4">DBMS</h3>
       <div className="container">
         <Row>
           <Col md="6 text-left">
@@ -117,12 +190,12 @@ function App() {
           </Col>
           <Col md="6 text-left">
             {selectedFile?.name && (
-              <Button disabled={loading} color="danger" >
-                {"upload Data"}
+              <Button disabled={loading} color="danger" onClick={uploadData}>
+                {"Upload Data"}
               </Button>
             )}{" "}
             {selectedFile?.name && (
-              <Button disabled={loading} color="danger" >
+              <Button disabled={loading} color="danger" onClick={removeFile}>
                 {"Remove file"}
               </Button>
             )}
@@ -130,7 +203,7 @@ function App() {
         </Row>
         {loading && <progress style={{ width: "100%" }}></progress>}
         <h4 className="mt-4" style={{ color: "lightgrey" }}>
-          Data Table
+          Show All Data
         </h4>
         <Button onClick={fetchData}>Show Data</Button>
         {renderDataTable()}
