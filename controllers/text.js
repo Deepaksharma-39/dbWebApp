@@ -5,7 +5,9 @@ export const getResult = async (req, res) => {
     const result = await Test.find();
 
     // Send the result as JSON
+    if(result){
     res.status(200).json(result);
+    }
   } catch (err) {
     console.error("test error : ", err);
     res.status(500).json({ success: false, message: "Internal Server error" });
