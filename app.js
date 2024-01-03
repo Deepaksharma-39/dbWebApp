@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import connection from "./config.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";

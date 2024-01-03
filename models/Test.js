@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 
 const textSchema= new mongoose.Schema( {
-      "PHONE NO": String,
+      "MOBILE NO": String,
+      "CITY":String,
     },
   { strict:false,timestamps: true })
 

@@ -8,6 +8,7 @@ import {
   FormGroup,
   FormText,
   Input,
+  InputGroup,
   Row,
   Table,
 } from "reactstrap";
@@ -21,6 +22,85 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [rows, setRows] = useState([]);
   const [tableHeading, setTableHeading] = useState([]);
+  const [city, setCity] = useState("");
+  const [name1, setName1] = useState("");
+  const [email, setEmail] = useState("");
+  const [pan, setPan] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const findByCity = async () => {
+    try {
+      setRows([]);
+      setLoading(true);
+      const result = (
+        await axios.get(`http://localhost:5000/excel/findByCity/${city}`)
+      ).data;
+      setLoading(false);
+      setRows(result);
+      console.log(result);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  const findByName = async () => {
+    try {
+      setRows([]);
+      setLoading(true);
+      const result = (
+        await axios.get(`http://localhost:5000/excel/findByName/${name1}`)
+      ).data;
+      setLoading(false);
+      setRows(result);
+      console.log(name1);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  const findByEmail = async () => {
+    try {
+      setRows([]);
+      setLoading(true);
+      const result = (
+        await axios.get(`http://localhost:5000/excel/findByEmail/${email}`)
+      ).data;
+      setLoading(false);
+      setRows(result);
+      console.log(result);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  const findByPan = async () => {
+    try {
+      setRows([]);
+      setLoading(true);
+      const result = (
+        await axios.get(`http://localhost:5000/excel/findByPan/${pan}`)
+      ).data;
+      setLoading(false);
+      setRows(result);
+
+      console.log(result);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
+  const findByPhone = async () => {
+    try {
+      setRows([]);
+      setLoading(true);
+      const result = (
+        await axios.get(`http://localhost:5000/excel/findByPhone/${phone}`)
+      ).data;
+      setLoading(false);
+      setRows(result);
+
+      console.log(result);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -28,6 +108,10 @@ function App() {
       setLoading(true);
       const result = (await axios.get("http://localhost:5000/excel/read")).data;
       setLoading(false);
+      if (result.length > 0) {
+        const keys = Object.keys(result[0]);
+        setTableHeading(keys);
+      }
       setRows(result);
     } catch (err) {
       setLoading(false);
@@ -56,7 +140,6 @@ function App() {
           const keys = Object.keys(result[0]);
           setTableHeading(keys);
         }
-        console.log("heading", tableHeading);
         setRows(result);
         setExcelRows(result);
         setLoading(false);
@@ -66,28 +149,28 @@ function App() {
   };
 
   const renderDataTable = () => {
-    if (rows.length > 0) {
-      return (
-        <Table>
-          <thead>
-            <tr>
-              {tableHeading.map((key) => (
-                <th key={key}>{key}</th>
+if (rows.length > 0) {
+    return (
+      <Table>
+        <thead>
+          <tr>
+            {tableHeading.map((key) => (
+              <th key={key}>{key}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((item, id) => (
+            <tr key={id}>
+              {Object.values(item).map((value, index) => (
+                <td key={index}>{value}</td>
               ))}
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((item, id) => (
-              <tr key={id}>
-                {Object.values(item).map((value, index) => (
-                  <td key={index}>{value}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      );
-    } else {
+          ))}
+        </tbody>
+      </Table>
+    );
+} else {
       return <p>No data available.</p>;
     }
   };
@@ -124,12 +207,21 @@ function App() {
         .data;
       const data = response || [];
 
-      const result = excelRows.map((obj,index) => {
+      const result = excelRows.map((obj, index) => {
         const mappedObject = {};
         tableHeading.forEach((key) => {
-          
+          if (key === "MOBILE NO") {
+            const existingRecord = data.find(
+              (record) => record["MOBILE NO"] === obj[key]
+            );
+            console.log("existingRecord", existingRecord);
+            mappedObject["_id"] = existingRecord
+              ? existingRecord["_id"]
+              : undefined;
+            mappedObject["MOBILE NO"] = obj[key];
+          } else {
             mappedObject[key] = obj[key] || "";
-          
+          }
         });
 
         return mappedObject;
@@ -139,12 +231,12 @@ function App() {
       const newData = result.filter((x) => !x._id);
 
       if (updatedData.length) {
-        const result = (
-          await axios.postForm(
-            "http://localhost:5000/excel/update",
-            updatedData
-          )
+        const result = await axios.post(
+          "http://localhost:5000/excel/update",
+          updatedData,
+          { headers: { "Content-Type": "application/json" } }
         ).data;
+
         if (result) {
           alert("Successfully update " + updatedData.length + " documents");
         }
@@ -190,22 +282,99 @@ function App() {
           </Col>
           <Col md="6 text-left">
             {selectedFile?.name && (
-              <Button disabled={loading} color="danger" onClick={uploadData}>
+              <Button disabled={loading} color="success" onClick={uploadData}>
                 {"Upload Data"}
               </Button>
             )}{" "}
             {selectedFile?.name && (
               <Button disabled={loading} color="danger" onClick={removeFile}>
-                {"Remove file"}
+                {"Reset"}
               </Button>
-            )}
+            )}{" "}
+            <Button onClick={fetchData}>Show all Data</Button>
           </Col>
         </Row>
+       
+
+        <Row className="citySearchBox">
+          <Col md="3 text-left">
+            <InputGroup>
+              <Input
+                id="inputSearchByCity"
+                name="citySearch"
+                type="text"
+                placeholder="Search by city"
+                onChange={(e) => {
+                  setCity(e.target.value);
+                }}
+              ></Input>
+              <Button onClick={findByCity}>Search</Button>
+            </InputGroup>
+          </Col>
+
+          <Col md="3 text-left">
+            <InputGroup>
+              <Input
+                id="inputSearchByName"
+                name="nameSearch"
+                type="text"
+                placeholder="Search by Name"
+                onChange={(e) => {
+                  setName1(e.target.value);
+                }}
+              ></Input>
+              <Button onClick={findByName}>Search</Button>
+            </InputGroup>
+          </Col>
+
+          <Col md="3 text-left">
+            <InputGroup>
+              <Input
+                id="inputSearchByEmail"
+                name="emailSearch"
+                type="text"
+                placeholder="Search by Email"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+              ></Input>
+              <Button onClick={findByEmail}>Search</Button>
+            </InputGroup>
+          </Col>
+          <Col md="3 text-left">
+            <InputGroup>
+              <Input
+                id="inputSearchByPan"
+                name="panSearch"
+                type="text"
+                placeholder="Search by Pan No"
+                onChange={(e) => {
+                  setPan(e.target.value);
+                }}
+              ></Input>
+              <Button onClick={findByPan}>Search</Button>
+            </InputGroup>
+          </Col>
+        </Row>
+        
+        <Row>
+        <Col md="3 text-left">
+            <InputGroup>
+              <Input
+                id="inputSearchByPHone"
+                name="phoneSearch"
+                type="text"
+                placeholder="Search by Phone No"
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                }}
+              ></Input>
+              <Button onClick={findByPhone}>Search</Button>
+            </InputGroup>
+          </Col>
+        </Row>
+
         {loading && <progress style={{ width: "100%" }}></progress>}
-        <h4 className="mt-4" style={{ color: "lightgrey" }}>
-          Show All Data
-        </h4>
-        <Button onClick={fetchData}>Show Data</Button>
         {renderDataTable()}
       </div>
     </Fragment>
