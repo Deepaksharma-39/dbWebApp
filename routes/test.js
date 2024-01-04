@@ -1,5 +1,5 @@
 import express from "express";
-import { findByCity, findByName, findByPan, findByPhone, findByemail, getResult, test, testUpdate } from "../controllers/text.js";
+import { findByCity, findByName, findByPan, findByPhone, findByemail, getPaginatedResult, getResult, test, testUpdate } from "../controllers/text.js";
 
 const testRouter = express.Router();
 
@@ -8,6 +8,8 @@ testRouter.post('/test', test);
 testRouter.post('/update', testUpdate);
 
 testRouter.get('/read', getResult);
+
+testRouter.get(`/readPagination`, getPaginatedResult);
 
 testRouter.get('/findByCity/:city', findByCity);
 

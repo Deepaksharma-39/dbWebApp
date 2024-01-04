@@ -1,6 +1,8 @@
 import Test from "../models/test.js";
 
 export const getResult = async (req, res) => {
+
+  
   try {
     const result = await Test.find();
 
@@ -13,6 +15,39 @@ export const getResult = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server error" });
   }
 };
+
+export const getPaginatedResult = async (req, res) => {
+
+  
+  let { page, pageSize } = req.query;
+  try {
+    // If "page" and "pageSize" are not sent we will default them to 1 and 50.
+    page = parseInt(page, 10) || 1;
+    pageSize = parseInt(pageSize, 10) || 50;
+
+
+
+    const articles = await Test.aggregate([
+      {
+        $facet: {
+          metadata: [{ $count: 'totalCount' }],
+          data: [{ $skip: (page - 1) * pageSize }, { $limit: pageSize }],
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      articles: {
+        metadata: { totalCount: articles[0].metadata[0].totalCount, page, pageSize },
+        data: articles[0].data,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false });
+  }
+};
+
 
 export const test = async (req, res, next) => {
   try {
