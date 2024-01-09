@@ -6,6 +6,10 @@ import { TablePagination } from "@mui/material";
 import {
   Button,
   Col,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
   FormGroup,
   FormText,
   Input,
@@ -17,22 +21,23 @@ import { read, utils } from "xlsx";
 
 const requiredFields = ["MOBILE NO", "NAME"];
 
-function Home() {
+function Demo() {
   const [count, setCount] = useState(0);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
   const [loading, setLoading] = useState(false);
   const [excelRows, setExcelRows] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [rows, setRows] = useState([]);
+  const [newRows, setNewRows] = useState([]);
+  const [oldRows, setOldRows] = useState([]);
   const [tableHeading, setTableHeading] = useState([]);
   const [city, setCity] = useState("");
   const [name1, setName1] = useState("");
   const [email, setEmail] = useState("");
   const [pan, setPan] = useState("");
   const [phone, setPhone] = useState("");
-  const [allData,setAllData]=useState([]);
-  const [dropdownOpen, setOpen] = useState(false);
+  const [dropdownOpen, setOpen]=useState(false);
 
   // pagination
   const handleChangePage = (event, newPage) => {
@@ -52,8 +57,6 @@ function Home() {
       ).data;
       setLoading(false);
       setRows(result);
-      setExcelRows(result);
-      setCount(result.length);
     } catch (error) {
       setLoading(false);
     }
@@ -66,10 +69,7 @@ function Home() {
         await axios.get(`http://localhost:5000/api/findByName/${name1}`)
       ).data;
       setLoading(false);
-      setExcelRows(result);
-      setRows(result)
-      setCount(result.length);
-
+      setRows(result);
     } catch (error) {
       setLoading(false);
     }
@@ -83,9 +83,6 @@ function Home() {
       ).data;
       setLoading(false);
       setRows(result);
-      setExcelRows(result);
-      setCount(result.length);
-
     } catch (error) {
       setLoading(false);
     }
@@ -99,9 +96,6 @@ function Home() {
       ).data;
       setLoading(false);
       setRows(result);
-      setExcelRows(result);
-
-      setCount(result.length);
 
     } catch (error) {
       setLoading(false);
@@ -115,140 +109,17 @@ function Home() {
       const result = (
         await axios.get(`http://localhost:5000/api/findByPhone/${phone}`)
       ).data;
-      if (result) {
-        const keys = Object.keys(result[0]);
-        setTableHeading(keys);
-      }
       setLoading(false);
       setRows(result);
-      setExcelRows(result);
-      setCount(result.length);
 
     } catch (error) {
       setLoading(false);
     }
   };
 
-  // Function to filter objects with key "Whatsapp" and value "unused" (case-insensitive)
-function filterUsedData(arr) {
-  setLoading(true);
-
-  const uppercaseKey = 'WHATS APP';
-  const uppercaseValue = 'UNUSED';
-
-  const newArr = arr.filter(obj => 
-    obj[uppercaseKey]?.toUpperCase() === uppercaseValue.toUpperCase()
-  );
-
-  if (newArr.length>0) {
-    const keys = Object.keys(newArr[0]);
-    setTableHeading(keys);
-  }
-  console.log(newArr);
-  setRows(newArr);
-  setCount(newArr.length)
-  setExcelRows(newArr)
-  renderDataTable();
-  setLoading(false);
-}
-
-
-function filterBankData(arr) {
-  setLoading(true);
-
-  const firstConditionKey = 'LOGIN BANK 2';
-  const firstConditionValue = 'SBI BANK';
-
-  const secondConditionKey = 'BANKS STATUS_1';
-  const secondConditionValue = 'rejected';
-
-  const newArr = arr.filter(obj => 
-    obj[firstConditionKey]?.toUpperCase() === firstConditionValue.toUpperCase() &&
-    obj[secondConditionKey]?.toUpperCase() === secondConditionValue.toUpperCase()
-  );
-
-  if (newArr.length > 0) {
-    const keys = Object.keys(newArr[0]);
-    setTableHeading(keys);
-  }
-
-  console.log(newArr);
-  setRows(newArr);
-  setCount(newArr.length);
-  setExcelRows(newArr);
-  renderDataTable();
-  setLoading(false);
-}
-
-
-  // const findByWhatsappStatus = async () => {
-  //   try {
-  //     setRows([]);
-  //     setLoading(true);
-  //     const result = (
-  //       await axios.get(`http://localhost:5000/api/findByWhatsappStatus`)
-  //     ).data;
-  //     if (result) {
-  //       const keys = Object.keys(result[0]);
-  //       setTableHeading(keys);
-  //     }
-  //     setLoading(false);
-  //     setRows(result);
-  //     setExcelRows(result);
-  //     setCount(result.length);
-
-  //   } catch (error) {
-  //     setLoading(false);
-  //   }
-  // };
-  
-  // const findByBankNameAndStatus = async () => {
-  //   try {
-  //     setRows([]);
-  //     setLoading(true);
-  //     const result = (
-  //       await axios.get(`http://localhost:5000/api/findByBankNameAndStatus`)
-  //     ).data;
-  //     if (result) {
-  //       const keys = Object.keys(result[0]);
-  //       setTableHeading(keys);
-  //     }
-  //     setLoading(false);
-  //     setRows(result);
-  //     setExcelRows(result);
-  //     setCount(result.length);
-
-  //   } catch (error) {
-  //     setLoading(false);
-  //   }
-  // };
-
-  const fetchAllData = async () => {
-    try {
-      
-      setLoading(true);
-      const result = (
-        await axios.get(
-          `http://localhost:5000/api/read`
-        )
-      ).data;
-      if (result) {
-        const keys = Object.keys(result[0]);
-        setTableHeading(keys)
-      }
-      setAllData(result);
-      setExcelRows(result)
-      setCount(result.length)
-      setLoading(false);
-    } catch (err) {
-      setLoading(false);
-    }
-  };
   const fetchData = async () => {
     try {
       setRows([]);
-      setExcelRows([]);
-      setCount(0);
       setLoading(true);
       const result = (
         await axios.get(
@@ -260,8 +131,8 @@ function filterBankData(arr) {
         const keys = Object.keys(result.articles.data[0]);
         setTableHeading(keys);
       }
-      setCount(Math.ceil(result.articles.metadata.totalCount));
-      setExcelRows(result.articles.data);
+      setCount(Math.ceil(result.articles.metadata.totalCount / rowsPerPage));
+      setRows(result.articles.data);
     } catch (err) {
       setLoading(false);
     }
@@ -286,7 +157,6 @@ function filterBankData(arr) {
           setTableHeading(keys);
         }
         setRows(result);
-        setCount(result.length);
         setExcelRows(result);
 
         // Compare file to that with database
@@ -298,40 +168,27 @@ function filterBankData(arr) {
   };
 
   const renderDataTable = () => {
-    if (excelRows.length > 0) {
-      const paginatedData = excelRows.slice(
-        page * rowsPerPage,
-        (page + 1) * rowsPerPage
-      );
+    if (rows.length > 0) {
       return (
         <>
-        <Table>
-  <thead>
-    <tr>
-      {tableHeading.map((key) => (
-        <th key={key}>{key}</th>
-      ))}
-    </tr>
-  </thead>
-  <tbody>
-    {excelRows.length > 0
-      ? paginatedData.map((item, id) => (
-          <tr key={id}>
-            {tableHeading.map((key, index) => (
-              <td key={index}>{item[key]}</td>
-            ))}
-          </tr>
-        ))
-      : rows.map((item, id) => (
-          <tr key={id}>
-            {tableHeading.map((key, index) => (
-              <td key={index}>{item[key]}</td>
-            ))}
-          </tr>
-        ))}
-  </tbody>
-</Table>
-
+          <Table>
+            <thead>
+              <tr>
+                {tableHeading.map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item, id) => (
+                <tr key={id}>
+                  {Object.values(item).map((value, index) => (
+                    <td key={index}>{value}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </Table>
           {/* <Pagination total={count} current={page} onChange={(value)=>setPage(value)}/> */}
           <TablePagination
             component="div"
@@ -359,7 +216,6 @@ function filterBankData(arr) {
   const uploadData = async () => {
     try {
       setLoading(true);
-      setTableHeading([]);
 
       const firstItemKeys = excelRows[0] && Object.keys(excelRows[0]);
       let requiredValidation = false;
@@ -370,8 +226,6 @@ function filterBankData(arr) {
             requiredValidation = true;
           }
         });
-
-        setTableHeading(firstItemKeys);
       }
 
       if (requiredValidation) {
@@ -385,11 +239,10 @@ function filterBankData(arr) {
 
       const result = excelRows.map((obj, index) => {
         const mappedObject = {};
-
         tableHeading.forEach((key) => {
           if (key === "MOBILE NO") {
             const existingRecord = data.find(
-              (record) => String(record["MOBILE NO"]) === String(obj[key])
+              (record) => record["MOBILE NO"] === obj[key]
             );
             mappedObject["_id"] = existingRecord
               ? existingRecord["_id"]
@@ -404,34 +257,23 @@ function filterBankData(arr) {
       });
 
       const updatedData = result.filter((x) => x._id);
-
       const newData = result.filter((x) => !x._id);
 
       if (updatedData.length) {
-        try {
-          const result = await axios.post(
-            "http://localhost:5000/api/update",
-            updatedData,
-            { headers: { "Content-Type": "application/json" } }
-          );
-      
-          if (result.data && result.data.success) {
-            alert("Successfully update " + updatedData.length + " documents");
-          } else {
-            // Handle the case where the update was not successful
-            alert("Failed to update documents");
-          }
-        } catch (error) {
-          // Handle any errors that occurred during the API call
-          console.error("Error updating documents:", error);
-          alert("Error updating documents");
+        const result = await axios.post(
+          "http://localhost:5000/excel/update",
+          updatedData,
+          { headers: { "Content-Type": "application/json" } }
+        ).data;
+
+        if (result) {
+          alert("Successfully update " + updatedData.length + " documents");
         }
       }
-      
 
       if (newData.length) {
         const result = (
-          await axios.post("http://localhost:5000/api/test", newData)
+          await axios.post("http://localhost:5000/excel/test", newData)
         ).data;
 
         if (result) {
@@ -443,13 +285,11 @@ function filterBankData(arr) {
       setLoading(false);
     } catch (err) {
       setLoading(false);
-      alert("Failed");
-      console.log("upload Error :", err);
+      console.error("upload Error :", err);
     }
   };
 
   const compareData = async (result) => {
-    console.log(result);
 
     try {
       setLoading(true);
@@ -460,16 +300,15 @@ function filterBankData(arr) {
         result
       );
 
+ 
+
+
       setLoading(false);
     } catch (error) {
       console.error("Error during comparison:", error);
       setLoading(false);
     }
   };
-
-  useEffect(()=>{
-    fetchAllData();
-  },[])
 
   return (
     <Fragment>
@@ -584,25 +423,38 @@ function filterBankData(arr) {
           </Col>
         </Row>
 
-        <Row className="marginBottom20">
-          <Col md="3 text-left">
-           
-             
-              <Button onClick={()=>filterUsedData(allData)}>UNUSED whatsapp</Button>
-            
-          </Col>
-          <Col md="3 text-left">
-           
-             
-              <Button onClick={()=>filterBankData(allData)}>AXIS BANK status</Button>
-            
-          </Col>
-        </Row>
-
-        {excelRows.length > 0 ? (
+        {rows.length > 0 ? (
           <Row>
-            <Col md="6 text-left">
-             {<h3>Total Entry: {count}</h3>}
+            <Col md="3 text-left">
+              <h3>Total Entry: {rows.length}</h3>
+            </Col>
+            <Col md="3 text-left">
+              <h3>New Entry: {newRows.length}</h3>
+            </Col>
+            <Col md="3 text-left">
+              <h3>Old Entry: {oldRows.length}</h3>
+            </Col>
+            <Col md="3 text-left">
+              <Dropdown toggle={()=>setOpen(!dropdownOpen) } isOpen={dropdownOpen}>
+                <DropdownToggle caret>List by</DropdownToggle>
+                <DropdownMenu container="body">
+                  <DropdownItem
+                    onClick={() => {
+                      
+                      setRows([]);
+                      setRows(newRows);
+                    }}
+                  >
+                    New
+                  </DropdownItem>
+                  <DropdownItem onClick={function noRefCheck() {}}>
+                    Action 2
+                  </DropdownItem>
+                  <DropdownItem onClick={function noRefCheck() {}}>
+                    Action 3
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             </Col>
           </Row>
         ) : (
@@ -620,4 +472,4 @@ function filterBankData(arr) {
   );
 }
 
-export default Home;
+export default Demo;

@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 connection();
 // Parse JSON request body
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '1gb' }));
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -30,7 +30,7 @@ app.use('/auth', authRouter);
 app.use('/user', userRouter);
 
 // read excel sheets
-app.use('/excel',testRouter)
+app.use('/api',testRouter)
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
